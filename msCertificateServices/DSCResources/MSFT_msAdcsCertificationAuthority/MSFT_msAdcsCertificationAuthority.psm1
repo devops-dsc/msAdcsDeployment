@@ -1,4 +1,4 @@
-﻿#region Get Resource
+#region Get Resource
 Function Get-TargetResource
 {
     [CmdletBinding()]

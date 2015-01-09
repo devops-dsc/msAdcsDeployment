@@ -1,4 +1,4 @@
-﻿#region Param
+#region Param
 
 param
 (
@@ -142,7 +142,7 @@ if ((test-path C:\Windows\temp\FirstDC.txt) -eq $True)
                 Name = 'ADCS-Web-Enrollment'
             }
 
-            xADDomain PrimaryDC
+            msADDomain PrimaryDC
             {
                 DomainAdministratorCredential = $Node.Credential
                 DomainName = $Node.DomainName
@@ -153,7 +153,7 @@ if ((test-path C:\Windows\temp\FirstDC.txt) -eq $True)
                 DependsOn = "[xDisk]DataDisk", "[WindowsFeature]AD-Domain-Services"
             }
 
-            xADCSCertificationAuthority ADCS
+             ADCS
             {
                 Ensure = 'Present'
                 Credential = $Node.Credential
@@ -161,15 +161,18 @@ if ((test-path C:\Windows\temp\FirstDC.txt) -eq $True)
                 DependsOn = '[WindowsFeature]ADCS-Cert-Authority'              
             }
 
-            xADCSWebEnrollment CertSrv
+             CertSrv
             {
                 Ensure = 'Absent'
                 Name = 'CertSrv'
                 Credential = $Node.Credential
-                DependsOn = '[xADCSCertificationAuthority]ADCS'
+                DependsOn = '[]ADCS'
             }
 
-            LocalConfigurationManager            {                CertificateId = $node.Thumbprint                ConfigurationMode = 'ApplyandAutoCorrect'
+            LocalConfigurationManager
+            {
+                CertificateId = $node.Thumbprint
+                ConfigurationMode = 'ApplyandAutoCorrect'
                 RebootNodeIfNeeded = 'True'
             }
         }
@@ -210,7 +213,7 @@ if ((test-path C:\Windows\temp\FirstDC.txt) -eq $False)
                    Name = 'AD-Domain-Services'
             }
 
-            xWaitForADDomain WaitforDomain
+            msWaitForADDomain WaitforDomain
             {
                 DomainName = $Node.DomainName
                 DomainUserCredential = $Node.DomainCredential
@@ -219,7 +222,7 @@ if ((test-path C:\Windows\temp\FirstDC.txt) -eq $False)
                 DependsOn = "[WindowsFeature]AD-Domain-Services"
             }
         
-            xADDomainController BackupDC
+            msADDomainController BackupDC
             {
                 DomainAdministratorCredential = $Node.DomainCredential
                 DomainName = $Node.DomainName
@@ -227,10 +230,13 @@ if ((test-path C:\Windows\temp\FirstDC.txt) -eq $False)
                 DatabasePath = $Node.Drive + ":\NTDS"
                 LogPath = $Node.Drive + ":\NTDS"
                 SysvolPath = $Node.Drive + ":\SYSVOL"
-                DependsOn = '[xDisk]DataDisk', '[WindowsFeature]AD-Domain-Services', '[xWaitforADDomain]WaitforDomain'
+                DependsOn = '[xDisk]DataDisk', '[WindowsFeature]AD-Domain-Services', '[msWaitForADDomain]WaitforDomain'
             }
 
-            LocalConfigurationManager            {                CertificateId = $node.Thumbprint                ConfigurationMode = 'ApplyandAutoCorrect'
+            LocalConfigurationManager
+            {
+                CertificateId = $node.Thumbprint
+                ConfigurationMode = 'ApplyandAutoCorrect'
                 RebootNodeIfNeeded = 'True'
             }
         }
@@ -240,7 +246,11 @@ DomainController -ConfigurationData $configData -OutputPath $PSScriptRoot
 
 }
 
-#endregion#region Apply MOFwinrm quickconfig -quiet
+#endregion
+
+#region Apply MOF
+
+winrm quickconfig -quiet
 
 Set-DscLocalConfigurationManager -ComputerName $env:COMPUTERNAME -Path $PSScriptRoot -Verbose
 Start-DscConfiguration -ComputerName $env:COMPUTERNAME -Path $PSScriptRoot -Force -Verbose -Wait
