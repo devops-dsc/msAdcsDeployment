@@ -107,7 +107,7 @@ if ((test-path C:\Windows\temp\FirstDC.txt) -eq $True)
 {
     configuration FirstDomainController
     {
-        Import-DscResource -ModuleName xComputerManagement, xActiveDirectory, xCertificateServices
+        Import-DscResource -ModuleName msComputerManagement, msActiveDirectory, msCertificateServices
 
         node $AllNodes.Where{$_.ServerRole -eq 'Active Directory Domain Controller'}.Nodename
         {    
@@ -190,7 +190,7 @@ if ((test-path C:\Windows\temp\FirstDC.txt) -eq $False)
 {
     configuration DomainController
     {
-        Import-DscResource -ModuleName xComputerManagement, xActiveDirectory
+        Import-DscResource -ModuleName msComputerManagement, msActiveDirectory
 
         node $AllNodes.Where{$_.ServerRole -eq 'Active Directory Domain Controller'}.Nodename
         {    
